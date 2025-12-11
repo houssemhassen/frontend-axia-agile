@@ -8,10 +8,9 @@ import { useHeaderState } from "./header/useHeaderState";
 
 interface HeaderProps {
   onLoginClick?: () => void;
-  onRegisterClick?: () => void;
 }
 
-const Header = ({ onLoginClick, onRegisterClick }: HeaderProps) => {
+const Header = ({ onLoginClick }: HeaderProps) => {
   const { isScrolled, currentUser, handleLogout, isHomePage } = useHeaderState();
 
   return (
@@ -21,20 +20,18 @@ const Header = ({ onLoginClick, onRegisterClick }: HeaderProps) => {
           <HeaderLogo />
           <HeaderNav />
         </div>
-        
+
         <div className="flex items-center gap-4">
-          <HeaderUserActions 
+          <HeaderUserActions
             currentUser={currentUser}
             handleLogout={handleLogout}
             onLoginClick={onLoginClick}
-            onRegisterClick={onRegisterClick}
           />
-          
-          <MobileMenu 
+
+          <MobileMenu
             currentUser={currentUser}
             handleLogout={handleLogout}
             onLoginClick={onLoginClick}
-            onRegisterClick={onRegisterClick}
           />
         </div>
       </div>

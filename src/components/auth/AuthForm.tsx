@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface AuthFormProps {
-  type: "login" | "signup";
+  type: "login" ;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
 }
@@ -57,54 +57,6 @@ const AuthForm = ({ type, onSubmit, isLoading = false }: AuthFormProps) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {type === "signup" && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="firstName" className="block text-sm font-medium text-slate-700">
-                  First Name
-                </label>
-                <div className="relative">
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="pl-10"
-                    placeholder="John"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <UserCircle size={18} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="lastName" className="block text-sm font-medium text-slate-700">
-                  Last Name
-                </label>
-                <div className="relative">
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="pl-10"
-                    placeholder="Doe"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <UserCircle size={18} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-slate-700">
             Email Address
@@ -152,42 +104,8 @@ const AuthForm = ({ type, onSubmit, isLoading = false }: AuthFormProps) => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
-          {type === "signup" && (
-            <p className="text-xs text-slate-500">
-              Password must be at least 8 characters
-            </p>
-          )}
+         
         </div>
-
-        {type === "signup" && (
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="pl-10 pr-10"
-                placeholder="••••••••"
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Lock size={18} />
-              </div>
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="space-y-2">
           <label htmlFor="role" className="block text-sm font-medium text-slate-700">

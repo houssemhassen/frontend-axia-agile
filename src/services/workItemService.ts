@@ -1,33 +1,36 @@
-/**
- * Work Item Management Service
- * Handles tasks, user stories, bugs, etc.
- */
-
-import { apiClient } from './api';
-import { 
-  WorkItem, 
+import api from "./api";
+import {
+  WorkItem,
   AcceptanceCriteria,
   WorkItemFilters,
   PaginatedResponse,
-  PaginationParams 
-} from '@/types/api';
+  PaginationParams,
+} from "@/types/api";
 
 export class WorkItemService {
-  // Work Item CRUD operations
-  async getWorkItems(filters?: WorkItemFilters & PaginationParams): Promise<PaginatedResponse<WorkItem>> {
-    return apiClient.get<PaginatedResponse<WorkItem>>('/api/v1/workitems', filters);
+  // --------------------------
+  // WORK ITEM CRUD
+  // --------------------------
+  async getWorkItems(
+    filters?: WorkItemFilters & PaginationParams
+  ): Promise<PaginatedResponse<WorkItem>> {
+    const { data } = await api.get<PaginatedResponse<WorkItem>>("/api/v1/workitems", {
+      params: filters,
+    });
+    return data;
   }
 
   async getWorkItem(id: number): Promise<WorkItem> {
-    return apiClient.get<WorkItem>(`/api/v1/workitems/${id}`);
+    const { data } = await api.get<WorkItem>(`/api/v1/workitems/${id}`);
+    return data;
   }
 
   async createWorkItem(data: {
     projectId: number;
     title: string;
     description: string;
-    type: 'Epic' | 'UserStory' | 'Task' | 'Bug' | 'Spike';
-    priority: 'Low' | 'Medium' | 'High' | 'Critical';
+    type: "Epic" | "UserStory" | "Task" | "Bug" | "Spike";
+    priority: "Low" | "Medium" | "High" | "Critical";
     storyPoints?: number;
     assigneeId?: string;
     sprintId?: number;
@@ -35,30 +38,40 @@ export class WorkItemService {
     tags?: string[];
     dueDate?: string;
   }): Promise<WorkItem> {
-    return apiClient.post<WorkItem>('/api/v1/workitems', data);
+    const { data: result } = await api.post<WorkItem>("/api/v1/workitems", data);
+    return result;
   }
 
-  async updateWorkItem(id: number, data: {
-    title?: string;
-    description?: string;
-    status?: 'New' | 'InProgress' | 'Testing' | 'Done' | 'Blocked';
-    priority?: 'Low' | 'Medium' | 'High' | 'Critical';
-    assigneeId?: string;
-    storyPoints?: number;
-    sprintId?: number;
-    tags?: string[];
-    dueDate?: string;
-  }): Promise<WorkItem> {
-    return apiClient.put<WorkItem>(`/api/v1/workitems/${id}`, data);
+  async updateWorkItem(
+    id: number,
+    data: {
+      title?: string;
+      description?: string;
+      status?: "New" | "InProgress" | "Testing" | "Done" | "Blocked";
+      priority?: "Low" | "Medium" | "High" | "Critical";
+      assigneeId?: string;
+      storyPoints?: number;
+      sprintId?: number;
+      tags?: string[];
+      dueDate?: string;
+    }
+  ): Promise<WorkItem> {
+    const { data: result } = await api.put<WorkItem>(`/api/v1/workitems/${id}`, data);
+    return result;
   }
 
   async deleteWorkItem(id: number): Promise<void> {
-    return apiClient.delete<void>(`/api/v1/workitems/${id}`);
+    await api.delete(`/api/v1/workitems/${id}`);
   }
 
-  // Acceptance Criteria management
+  // --------------------------
+  // ACCEPTANCE CRITERIA
+  // --------------------------
   async getAcceptanceCriteria(workItemId: number): Promise<AcceptanceCriteria[]> {
-    return apiClient.get<AcceptanceCriteria[]>(`/api/v1/workitems/${workItemId}/acceptance-criteria`);
+    const { data } = await api.get<AcceptanceCriteria[]>(
+      `/api/v1/workitems/${workItemId}/acceptance-criteria`
+    );
+    return data;
   }
 
   async addAcceptanceCriteria(data: {
@@ -67,37 +80,57 @@ export class WorkItemService {
     description: string;
     order?: number;
   }): Promise<AcceptanceCriteria> {
-    return apiClient.post<AcceptanceCriteria>('/api/v1/acceptancecriteria', data);
+    const { data: result } = await api.post<AcceptanceCriteria>(
+      "/api/v1/acceptancecriteria",
+      data
+    );
+    return result;
   }
 
-  async updateAcceptanceCriteria(id: number, data: {
-    title?: string;
-    description?: string;
-    isCompleted?: boolean;
-    order?: number;
-  }): Promise<AcceptanceCriteria> {
-    return apiClient.put<AcceptanceCriteria>(`/api/v1/acceptancecriteria/${id}`, data);
+  async updateAcceptanceCriteria(
+    id: number,
+    data: {
+      title?: string;
+      description?: string;
+      isCompleted?: boolean;
+      order?: number;
+    }
+  ): Promise<AcceptanceCriteria> {
+    const { data: result } = await api.put<AcceptanceCriteria>(
+      `/api/v1/acceptancecriteria/${id}`,
+      data
+    );
+    return result;
   }
 
   async deleteAcceptanceCriteria(id: number): Promise<void> {
-    return apiClient.delete<void>(`/api/v1/acceptancecriteria/${id}`);
+    await api.delete(`/api/v1/acceptancecriteria/${id}`);
   }
 
-  // Kanban board operations
+  // --------------------------
+  // KANBAN BOARD
+  // --------------------------
   async getKanbanBoard(projectId: number): Promise<{
     columns: { status: string; workItems: WorkItem[] }[];
   }> {
-    return apiClient.get<any>(`/api/v1/kanban/board/${projectId}`);
+    const { data } = await api.get(`/api/v1/kanban/board/${projectId}`);
+    return data;
   }
 
-  async moveWorkItem(workItemId: number, data: {
-    newStatus: string;
-    position: number;
-  }): Promise<WorkItem> {
-    return apiClient.put<WorkItem>(`/api/v1/kanban/workitems/${workItemId}/move`, data);
+  async moveWorkItem(
+    workItemId: number,
+    data: { newStatus: string; position: number }
+  ): Promise<WorkItem> {
+    const { data: result } = await api.put<WorkItem>(
+      `/api/v1/kanban/workitems/${workItemId}/move`,
+      data
+    );
+    return result;
   }
 
-  // Work item assignments
+  // --------------------------
+  // ASSIGNMENTS
+  // --------------------------
   async assignWorkItem(workItemId: number, assigneeId: string): Promise<WorkItem> {
     return this.updateWorkItem(workItemId, { assigneeId });
   }
@@ -106,13 +139,19 @@ export class WorkItemService {
     return this.updateWorkItem(workItemId, { assigneeId: undefined });
   }
 
-  // Work item comments/activity (if supported by backend)
+  // --------------------------
+  // COMMENTS / ACTIVITY
+  // --------------------------
   async addComment(workItemId: number, comment: string): Promise<any> {
-    return apiClient.post<any>(`/api/v1/workitems/${workItemId}/comments`, { content: comment });
+    const { data } = await api.post(`/api/v1/workitems/${workItemId}/comments`, {
+      content: comment,
+    });
+    return data;
   }
 
   async getComments(workItemId: number): Promise<any[]> {
-    return apiClient.get<any[]>(`/api/v1/workitems/${workItemId}/comments`);
+    const { data } = await api.get<any[]>(`/api/v1/workitems/${workItemId}/comments`);
+    return data;
   }
 }
 

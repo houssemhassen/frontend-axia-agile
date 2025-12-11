@@ -1,10 +1,6 @@
-/**
- * Real-time Notification Service using SignalR
- * Handles WebSocket connections for real-time updates
- */
 
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { tokenManager } from './api';
+//import { api } from './api';
 
 export interface NotificationEvent {
   type: string;
@@ -24,34 +20,12 @@ class NotificationService {
       return;
     }
 
-    const token = tokenManager.getToken();
-    if (!token) {
-      console.warn('No auth token available for SignalR connection');
-      return;
-    }
-
     const hubUrl = process.env.NODE_ENV === 'production'
       ? 'https://notifications.axia-agile.com/notificationHub'
       : 'http://localhost:5006/notificationHub';
 
     try {
-      this.connection = new HubConnectionBuilder()
-        .withUrl(hubUrl, {
-          accessTokenFactory: () => token
-        })
-        .withAutomaticReconnect({
-          nextRetryDelayInMilliseconds: retryContext => {
-            if (retryContext.previousRetryCount < 3) {
-              return 2000; // 2 seconds
-            } else if (retryContext.previousRetryCount < 5) {
-              return 5000; // 5 seconds
-            } else {
-              return 10000; // 10 seconds
-            }
-          }
-        })
-        .configureLogging(LogLevel.Information)
-        .build();
+    
 
       // Setup event handlers
       this.setupEventHandlers();

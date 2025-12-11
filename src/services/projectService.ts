@@ -3,84 +3,131 @@
  * Handles all project-related API calls
  */
 
-import { ProjectFormValues } from '@/components/projects/types/form-schema';
-import { apiClient } from './api';
-
+import { ProjectFormValues } from "@/components/projects/types/form-schema";
 
 import {
   Project,
   Workspace,
   ProjectStatistics,
   PaginatedResponse,
-  PaginationParams
-} from '@/types/api';
+  PaginationParams,
+} from "@/types/api";
+
+import api from "./api";
 
 export class ProjectService {
-  // Workspace methods
+  // --------------------------
+  // WORKSPACES
+  // --------------------------
+
   async getWorkspaces(): Promise<Workspace[]> {
-    return apiClient.get<Workspace[]>('/api/v1/workspaces');
+    const { data } = await api.get<Workspace[]>("/api/v1/workspaces");
+    return data;
   }
 
-  static async createWorkspace(data: ProjectFormValues): Promise<Workspace> {
-    return apiClient.post<Workspace>('/workspaces', data);
+  static async createWorkspace(payload: ProjectFormValues): Promise<Workspace> {
+    const { data } = await api.post<Workspace>("/api/v1/workspaces", payload);
+    return data;
   }
 
-  async updateWorkspace(id: number, data: { name: string; description?: string }): Promise<Workspace> {
-    return apiClient.put<Workspace>(`/api/v1/workspaces/${id}`, data);
+  async updateWorkspace(
+    id: number,
+    updates: { name: string; description?: string }
+  ): Promise<Workspace> {
+    const { data } = await api.put<Workspace>(
+      `/api/v1/workspaces/${id}`,
+      updates
+    );
+    return data;
   }
 
   async deleteWorkspace(id: number): Promise<void> {
-    return apiClient.delete<void>(`/api/v1/workspaces/${id}`);
+    await api.delete(`/api/v1/workspaces/${id}`);
   }
 
-  // Project methods
-  async getProjects(params?: { workspaceId?: number } & PaginationParams): Promise<PaginatedResponse<Project>> {
-    return apiClient.get<PaginatedResponse<Project>>('/api/v1/projects', params);
+  // --------------------------
+  // PROJECTS
+  // --------------------------
+
+  async getProjects(
+    params?: { workspaceId?: number } & PaginationParams
+  ): Promise<PaginatedResponse<Project>> {
+    const { data } = await api.get<PaginatedResponse<Project>>(
+      "/api/v1/projects",
+      { params }
+    );
+    return data;
   }
 
   async getProject(id: number): Promise<Project> {
-    return apiClient.get<Project>(`/api/v1/projects/${id}`);
+    const { data } = await api.get<Project>(`/api/v1/projects/${id}`);
+    return data;
   }
 
- static async createProject(data: {
+  static async createProject(payload: {
     workspaceId: number;
     name: string;
     description: string;
     startDate?: string;
     endDate?: string;
   }): Promise<Project> {
-    return apiClient.post<Project>('/api/v1/projects', data);
+    const { data } = await api.post<Project>("/api/v1/projects", payload);
+    return data;
   }
 
-  async updateProject(id: number, data: {
-    name?: string;
-    description?: string;
-    status?: 'Active' | 'Inactive' | 'Completed' | 'OnHold';
-    startDate?: string;
-    endDate?: string;
-  }): Promise<Project> {
-    return apiClient.put<Project>(`/api/v1/projects/${id}`, data);
+  async updateProject(
+    id: number,
+    updates: {
+      name?: string;
+      description?: string;
+      status?: "Active" | "Inactive" | "Completed" | "OnHold";
+      startDate?: string;
+      endDate?: string;
+    }
+  ): Promise<Project> {
+    const { data } = await api.put<Project>(
+      `/api/v1/projects/${id}`,
+      updates
+    );
+    return data;
   }
 
   async deleteProject(id: number): Promise<void> {
-    return apiClient.delete<void>(`/api/v1/projects/${id}`);
+    await api.delete(`/api/v1/projects/${id}`);
   }
 
   async getProjectStatistics(id: number): Promise<ProjectStatistics> {
-    return apiClient.get<ProjectStatistics>(`/api/v1/projects/${id}/statistics`);
+    const { data } = await api.get<ProjectStatistics>(
+      `/api/v1/projects/${id}/statistics`
+    );
+    return data;
   }
 
-  // Project team management
+  // --------------------------
+  // TEAM MANAGEMENT
+  // --------------------------
+
   async getProjectTeams(projectId: number): Promise<any[]> {
-    return apiClient.get<any[]>(`/api/v1/projects/${projectId}/teams`);
+    const { data } = await api.get<any[]>(
+      `/api/v1/projects/${projectId}/teams`
+    );
+    return data;
   }
 
-  async assignTeamToProject(projectId: number, teamId: string): Promise<void> {
-    return apiClient.post<void>(`/api/v1/projects/${projectId}/teams`, { teamId });
+  async assignTeamToProject(
+    projectId: number,
+    teamId: string
+  ): Promise<void> {
+    await api.post(`/api/v1/projects/${projectId}/teams`, { teamId });
   }
 
-  async removeTeamFromProject(projectId: number, teamId: string): Promise<void> {
-    return apiClient.delete<void>(`/api/v1/projects/${projectId}/teams/${teamId}`);
+  async removeTeamFromProject(
+    projectId: number,
+    teamId: string
+  ): Promise<void> {
+    await api.delete(
+      `/api/v1/projects/${projectId}/teams/${teamId}`
+    );
   }
 }
 
