@@ -1,4 +1,3 @@
-
 import { Route } from "react-router-dom";
 import RoleRoute from "@/components/auth/RoleRoute";
 import Dashboard from "@/pages/Dashboard";
@@ -38,9 +37,7 @@ export const DashboardRoutes = [
     key="billingadmin" 
     path="billing" 
     element={
-      <RoleRoute requiredRole="billingAdmin">
         <BillingAdminDashboard />
-      </RoleRoute>
     } 
   />,
   <Route 

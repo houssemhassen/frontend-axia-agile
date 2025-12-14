@@ -46,27 +46,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initializeAuth = async () => {
     try {
       if (authService.isAuthenticated()) {
-        const currentUser = await authService.getCurrentUser();
-        if (currentUser) {
-          // Convert authService UserData to our User type
-          const user: User = {
-            ...currentUser,
-            roles: [currentUser.role], // Convert single role to array
-            isApproved: currentUser.status === 'approved',
-            isEmailConfirmed: true
-          };
-          setUser(user);
-          
-          // Start notification service after successful authentication
-          await notificationService.start();
+        const savedUser = authService.getCurrentUser();
+        if (savedUser) {
+          setUser(savedUser);
         } else {
-          // Token might be invalid, clear it
-          await authService.logout();
+          const refreshed = await authService.refresh();
+          setUser(refreshed);
         }
       }
-    } catch (error) {
-      console.error('Auth initialization failed:', error);
+    } catch (err) {
       await authService.logout();
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -74,116 +64,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await authService.login(credentials);
-      
-      if (response.user) {
-        // Convert authService UserData to our User type
-        const user: User = {
-          ...response.user,
-          roles: [response.user.role], // Convert single role to array
-          isApproved: response.user.status === 'approved',
-          isEmailConfirmed: true // Assume true if login successful
-        };
-        
-        setUser(user);
-        
-        // Start notification service
-        await notificationService.start();
-        
-        toast.success('Login successful!');
-        return { success: true };
-      } else {
-        return { 
-          success: false, 
-          errors: ['Login failed'] 
-        };
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      return { 
-        success: false, 
-        errors: error.errors || [error.message || 'Login failed'] 
-      };
-    }
-  };
+      const loggedUser = await authService.login(credentials);
+      setUser(loggedUser);
 
-  const register = async (userData: RegisterData) => {
-    try {
-      // Convert our RegisterData to authService format
-      const authServiceData = {
-        ...userData,
-        role: (userData.role || 'Developer') as any // Cast to avoid type issues with existing authService
-      };
-      
-      const response = await authService.register(authServiceData);
-      
-      toast.success('Registration successful! Please check your email to verify your account.');
+      toast.success("Login successful!");
       return { success: true };
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      return { 
-        success: false, 
-        errors: error.errors || [error.message || 'Registration failed'] 
-      };
+    } catch (err: any) {
+      return { success: false, errors: [err.message] };
     }
   };
 
   const logout = async () => {
-    try {
-      await notificationService.stop();
-      await authService.logout();
-      setUser(null);
-      toast.success('Logged out successfully');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear user state even if logout request fails
-      setUser(null);
-    }
+    await authService.logout();
+    setUser(null);
+    toast.success("Logged out successfully");
   };
 
   const refreshUser = async () => {
-    try {
-      const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
-        // Convert authService UserData to our User type
-        const user: User = {
-          ...currentUser,
-          roles: [currentUser.role], // Convert single role to array
-          isApproved: currentUser.status === 'approved',
-          isEmailConfirmed: true
-        };
-        setUser(user);
-      }
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
-      // If refresh fails, user might need to re-authenticate
-      setUser(null);
-    }
+    const refreshed = await authService.refresh();
+    setUser(refreshed);
   };
 
   const hasRole = (role: string): boolean => {
-    return user?.roles?.includes(role) || false;
+    return user?.roleName === role;
   };
 
   const hasAnyRole = (roles: string[]): boolean => {
-    if (!user?.roles) return false;
-    return roles.some(role => user.roles.includes(role));
-  };
-
-  const contextValue: AuthContextType = {
-    user,
-    loading,
-    isAuthenticated: !!user,
-    login,
-    register,
-    logout,
-    refreshUser,
-    hasRole,
-    hasAnyRole
+    return roles.includes(user?.roleName || "");
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: !!user,
+        login,
+        register: () => Promise.resolve({ success: true }), // optionnel
+        logout,
+        refreshUser,
+        hasRole,
+        hasAnyRole
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,8 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-
-interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
+import axios, { InternalAxiosRequestConfig } from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
@@ -10,41 +6,33 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Refresh instance (no interceptors)
-const refreshClient = axios.create({
-  baseURL: import.meta.env.VITE_REFRESH_URL,
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
-
-// Refresh Token function
-const refreshToken = async () => {
-  try {
-    const res = await refreshClient.post("/auth/refresh");
-    console.log("Token refreshed");
-    return res.data;
-  } catch (error) {
-    console.error("Refresh failed");
-    throw error;
+// ✅ Interceptor: Ajouter le token à chaque requête
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    // Récupérer le token du localStorage
+    const token = localStorage.getItem("token"); // ou "accessToken" selon ton nom
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-};
+);
 
-// Interceptor: auto-refresh on 401
+// ✅ Interceptor: Gérer les erreurs 401 (token expiré/invalide)
 api.interceptors.response.use(
-  res => res,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as RetryAxiosRequestConfig;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        await refreshToken();
-        return api(originalRequest);
-      } catch (err) {
-        console.error("Refresh → logout required");
-        return Promise.reject(err);
-      }
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token invalide ou expiré → Rediriger vers login
+      console.error("Unauthorized - redirecting to login");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user"); // Si tu stockes aussi l'user
+      window.location.href = "/login"; // ou utiliser navigate si disponible
     }
     return Promise.reject(error);
   }

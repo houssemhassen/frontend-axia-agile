@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 
 interface HeroProps {
   onLoginClick: () => void;
-  onRegisterClick: () => void;
 }
 
-const Hero = ({ onLoginClick, onRegisterClick }: HeroProps) => {
+const Hero = ({ onLoginClick}: HeroProps) => {
   return (
     <section className="relative overflow-hidden pt-32 pb-24 px-4 sm:px-6 lg:px-8">
       {/* Background elements */}
@@ -35,7 +34,7 @@ const Hero = ({ onLoginClick, onRegisterClick }: HeroProps) => {
               <Button 
                 size="lg" 
                 className="bg-indigo-600 hover:bg-indigo-700 gap-2"
-                onClick={onRegisterClick}
+                onClick={onLoginClick}
               >
                 Get Started
                 <ArrowRight size={18} />
