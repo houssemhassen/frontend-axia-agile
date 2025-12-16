@@ -43,7 +43,7 @@ const SidebarAdmin = ({ role = "productOwner", onCollapsedChange }: SideNavProps
     },
     {
       name: "Projects",
-      path: "/projects",
+      path: "/project-management",
       icon: <GitBranch size={20} />,
       roles: ["superadmin", "productOwner", "scrumMaster"]
     },

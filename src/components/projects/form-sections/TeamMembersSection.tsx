@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +17,15 @@ const TeamMembersSection = ({
   onAddMember,
   onRemoveMember,
 }: TeamMembersSectionProps) => {
+  // Filter to show only Développeur role
+  const filteredAvailableMembers = availableTeamMembers.filter(
+    m => m.role === "Développeur" && !selectedTeamMembers.some(tm => tm.id === m.id)
+  );
+
+  const filteredSelectedMembers = selectedTeamMembers.filter(
+    m => m.role === "Développeur"
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -28,9 +36,9 @@ const TeamMembersSection = ({
           <div>
             <h3 className="text-lg font-medium mb-4">Selected Team Members</h3>
             <ScrollArea className="h-72 border rounded-md p-4">
-              {selectedTeamMembers.length > 0 ? (
+              {filteredSelectedMembers.length > 0 ? (
                 <div className="space-y-2">
-                  {selectedTeamMembers.map((member) => (
+                  {filteredSelectedMembers.map((member) => (
                     <div 
                       key={member.id} 
                       className="flex items-center justify-between p-2 border rounded hover:bg-muted"
@@ -68,30 +76,28 @@ const TeamMembersSection = ({
             <h3 className="text-lg font-medium mb-4">Available Team Members</h3>
             <ScrollArea className="h-72 border rounded-md p-4">
               <div className="space-y-2">
-                {availableTeamMembers
-                  .filter(m => !selectedTeamMembers.some(tm => tm.id === m.id))
-                  .map((member) => (
-                    <div 
-                      key={member.id} 
-                      className="flex items-center justify-between p-2 border rounded hover:bg-muted"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-muted text-foreground flex items-center justify-center text-sm font-medium">
-                          {member.avatar}
-                        </div>
-                        <div>
-                          <p className="font-medium">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">{member.role}</p>
-                        </div>
+                {filteredAvailableMembers.map((member) => (
+                  <div 
+                    key={member.id} 
+                    className="flex items-center justify-between p-2 border rounded hover:bg-muted"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-muted text-foreground flex items-center justify-center text-sm font-medium">
+                        {member.avatar}
                       </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => onAddMember(member.id)}
-                      >
-                        Add
-                      </Button>
+                      <div>
+                        <p className="font-medium">{member.name}</p>
+                        <p className="text-xs text-muted-foreground">{member.role}</p>
+                      </div>
                     </div>
-                  ))}
+                    <Button 
+                      size="sm"
+                      onClick={() => onAddMember(member.id)}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                ))}
               </div>
             </ScrollArea>
           </div>

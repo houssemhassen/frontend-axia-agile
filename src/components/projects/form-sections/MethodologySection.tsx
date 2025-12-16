@@ -52,7 +52,7 @@ const MethodologySection = ({ form }: MethodologySectionProps) => {
                     </div>
                   </div>
                   
-                  <div className="rounded-lg border p-4 hover:border-primary">
+ {/*                  <div className="rounded-lg border p-4 hover:border-primary">
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="hybrid" id="hybrid" />
                       <Label htmlFor="hybrid" className="font-semibold">Hybrid</Label>
@@ -83,7 +83,7 @@ const MethodologySection = ({ form }: MethodologySectionProps) => {
                       <Network className="h-5 w-5 mr-2 text-primary" />
                       <span className="text-sm text-muted-foreground">Scaled Agile Framework</span>
                     </div>
-                  </div>
+                  </div> */}
                 </RadioGroup>
               </FormControl>
             </FormItem>

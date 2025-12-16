@@ -8,6 +8,7 @@ import DashboardAdmin from "@/app/admin/dashboard";
 import AdminLayout from "@/app/admin/layout/AdminLayout";
 import { User } from "lucide-react";
 import UserManagement from "@/app/admin/UserManagement";
+import ProjectManagement from "@/app/admin/ProjectManagement";
 
 export const AdminRoutes = [
   <Route
@@ -27,32 +28,14 @@ export const AdminRoutes = [
         <UserManagement />
       </AdminLayout>
     }
+
   />,
   <Route
-    key="role-management"
-    path="role-management"
+    key="project-management"
+    path="project-management"
     element={
       <AdminLayout roles="Administrateur">
-        <RoleManagement />
+        <ProjectManagement />
       </AdminLayout>
     }
-  />,
-  <Route
-    key="activity"
-    path="activity"
-    element={
-      <RoleRoute requiredRole={["Administrateur", "productOwner"]}>
-        <Activity />
-      </RoleRoute>
-    }
-  />,
-  <Route
-    key="billing"
-    path="billing"
-    element={
-      <RoleRoute requiredRole="Administrateur">
-        <Billing />
-      </RoleRoute>
-    }
-  />
-];
+  />]
