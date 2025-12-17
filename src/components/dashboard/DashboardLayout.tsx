@@ -18,9 +18,9 @@ interface DashboardLayoutProps {
   role?: Role;
 }
 
-const DashboardLayout = ({ 
-  children, 
-  role = "productOwner" 
+const DashboardLayout = ({
+  children,
+  role = "ProductOwner"
 }: DashboardLayoutProps) => {
   const [notifications, setNotifications] = useState(5);
   const location = useLocation();
@@ -49,25 +49,25 @@ const DashboardLayout = ({
         }
       }
     }
-    
+
     // ✅ Get role from multiple sources with priority
-    const locationRole = location.state?.role;
+    const locationRole = location.pathname;
     const storedRole = localStorage.getItem("userRole");
-    const userRole = user?.role?.toLowerCase();
-    
+    const userRole = user?.roleName.toLowerCase();
+
     const roleToUse = locationRole || storedRole || userRole || role;
     setEffectiveRole(roleToUse as Role);
-    
+
     // Update localStorage if we have a new role from location
     if (locationRole && locationRole !== storedRole) {
       localStorage.setItem("userRole", locationRole);
     }
-    
+
     // ✅ Role display names mapping
     const roleNames: Record<string, string> = {
       'superadmin': 'Super Admin',
-      'billingadmin': 'Billing Admin', 
-      'productowner': 'Product Owner',
+      'billingadmin': 'Billing Admin',
+      'ProductOwner': 'Product Owner',
       'scrummaster': 'Scrum Master',
       'developer': 'Developer',
       'projectmanager': 'Project Manager',
@@ -76,15 +76,15 @@ const DashboardLayout = ({
 
     // ✅ Update display role in localStorage
     const displayRole = roleNames[roleToUse] || roleToUse;
- //   localStorage.setItem("userRoleDisplay", displayRole);
-    
-  }, [location.state?.role, role]);
+    //   localStorage.setItem("userRoleDisplay", displayRole);
+
+  }, [location.pathname, role]);
 
   // ✅ Get proper role for display
   const getDisplayRole = (): string => {
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
-      return currentUser.role;
+      return currentUser.roleName;
     }
     return localStorage.getItem("userRoleDisplay") || effectiveRole;
   };
@@ -96,18 +96,18 @@ const DashboardLayout = ({
         <div className="w-64 bg-white border-r border-gray-200">
           <SideNav role={effectiveRole} />
         </div>
-        
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <DashboardHeader 
+          <DashboardHeader
             userName={userName}
             role={effectiveRole}
             displayRole={getDisplayRole()}
             notifications={notifications}
             setNotifications={setNotifications}
           />
-          
+
           {/* Page Content */}
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">

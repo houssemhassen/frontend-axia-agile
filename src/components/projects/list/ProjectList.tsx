@@ -25,21 +25,22 @@ interface Project {
 }
 
 interface ProjectListProps {
-  projects: Project[];
+  projects?: Project[];
   onProjectClick: (projectId: number) => void;
   getPriorityColor: (priority: string) => string;
   getStatusBadge: (status: string) => JSX.Element;
   truncateText: (text: string, length: number) => string;
 }
 
-const ProjectList = ({ 
-  projects, 
-  onProjectClick, 
-  getPriorityColor, 
-  getStatusBadge, 
-  truncateText 
+const ProjectList = ({
+  projects,
+  onProjectClick,
+  getPriorityColor,
+  getStatusBadge,
+  truncateText
 }: ProjectListProps) => {
-  if (projects.length === 0) {
+  console.log('Rendering ProjectList with projects:', projects);
+  if (projects?.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="rounded-full bg-muted p-3 mb-3">
@@ -57,8 +58,8 @@ const ProjectList = ({
   return (
     <ScrollArea className="h-[460px] pr-4">
       <div className="space-y-4">
-        {projects.map((project) => (
-          <div 
+        {projects?.map((project) => (
+          <div
             key={project.id}
             className="border rounded-lg p-4 hover:border-primary cursor-pointer transition-colors"
             onClick={() => onProjectClick(project.id)}
@@ -72,7 +73,7 @@ const ProjectList = ({
               </div>
               {getStatusBadge(project.status)}
             </div>
-            
+
             <div className="mt-3">
               <div className="flex items-center justify-between text-sm mb-1">
                 <span>Progress</span>
@@ -80,25 +81,25 @@ const ProjectList = ({
               </div>
               <Progress value={project.progress} className="h-2" />
             </div>
-            
+
             <div className="flex flex-wrap mt-4 gap-y-3 justify-between">
               <div className="flex items-center text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4 mr-1" />
                 <span>{new Date(project.endDate).toLocaleDateString()}</span>
               </div>
-              
+
               <div className="flex items-center text-sm text-muted-foreground">
                 <Users className="h-4 w-4 mr-1" />
                 <span>{project.team}</span>
               </div>
-              
+
               <div className="flex items-center gap-1">
                 <Badge variant="outline" className={getPriorityColor(project.priority)}>
                   {project.priority}
                 </Badge>
               </div>
-              
-              <div className="flex -space-x-2">
+
+              {/*  <div className="flex -space-x-2">
                 {project.members.slice(0, 3).map((member) => (
                   <Avatar key={member.id} className="border-2 border-background h-7 w-7">
                     <AvatarImage src={member.avatar} alt={member.name} />
@@ -112,7 +113,7 @@ const ProjectList = ({
                     +{project.members.length - 3}
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
           </div>
         ))}

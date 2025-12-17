@@ -29,6 +29,7 @@ export const UseProjectManagement = () => {
     queryKey: ["projects"],
     queryFn: async () => {
       const response = await fetchAllProjects();
+      console.log('Fetched projects:', response.data);
       return response.data;
     },
   });

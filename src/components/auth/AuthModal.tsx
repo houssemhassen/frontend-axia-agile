@@ -32,7 +32,7 @@ interface AuthModalProps {
 // Map roles → routes
 const ROLE_ROUTES: Record<string, string> = {
   superadmin: "/superadmin",
-  Administrateur : "/admin",
+  Administrateur: "/admin",
   billingadmin: "/billing",
   productowner: "/product-owner",
   scrummaster: "/scrum-master",
@@ -69,6 +69,7 @@ export const AuthModal = ({
   // --------------
   const navigateByRole = (role: string) => {
     const route = ROLE_ROUTES[role.toLowerCase()] || "/dashboard";
+    //  console.log("Navigating to route:", route, "for role:", role.toLowerCase() );
     navigate(route);
   };
 

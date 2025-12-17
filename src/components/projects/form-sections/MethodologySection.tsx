@@ -32,27 +32,27 @@ const MethodologySection = ({ form }: MethodologySectionProps) => {
                 >
                   <div className="rounded-lg border p-4 hover:border-primary">
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="scrum" id="scrum" />
-                      <Label htmlFor="scrum" className="font-semibold">Scrum</Label>
+                      <RadioGroupItem value="Scrum" id="Scrum" />
+                      <Label htmlFor="Scrum" className="font-semibold">Scrum</Label>
                     </div>
                     <div className="flex items-center mb-3 mt-2">
                       <CalendarClock className="h-5 w-5 mr-2 text-primary" />
                       <span className="text-sm text-muted-foreground">Sprint-based approach</span>
                     </div>
                   </div>
-                  
+
                   <div className="rounded-lg border p-4 hover:border-primary">
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="kanban" id="kanban" />
-                      <Label htmlFor="kanban" className="font-semibold">Kanban</Label>
+                      <RadioGroupItem value="Kanban" id="Kanban" />
+                      <Label htmlFor="Kanban" className="font-semibold">Kanban</Label>
                     </div>
                     <div className="flex items-center mb-3 mt-2">
                       <Kanban className="h-5 w-5 mr-2 text-primary" />
                       <span className="text-sm text-muted-foreground">Flow-based approach</span>
                     </div>
                   </div>
-                  
- {/*                  <div className="rounded-lg border p-4 hover:border-primary">
+
+                  {/*                  <div className="rounded-lg border p-4 hover:border-primary">
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="hybrid" id="hybrid" />
                       <Label htmlFor="hybrid" className="font-semibold">Hybrid</Label>

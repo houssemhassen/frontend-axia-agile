@@ -7,7 +7,7 @@ interface Project {
 }
 
 interface ProjectStatsProps {
-  projectsData: Project[];
+  projectsData?: Project[];
 }
 
 const ProjectStats = ({ projectsData }: ProjectStatsProps) => {

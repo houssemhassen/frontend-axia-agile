@@ -1,49 +1,56 @@
-
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Users, GitBranch
+  LayoutDashboard, ListTodo, Users, BarChart3, Calendar,
+  GitBranch, CheckCircle, Bug, FileCode, MessageSquare,
+  Kanban, CreditCard, LineChart, History, Shield,
+  FileCheck, Play, PlusCircle, Milestone, CalendarRange
 } from "lucide-react";
 import NavSection, { NavItemType } from "../layout/navigation/NavSection";
 import UserProfile from "../layout/navigation/UserProfile";
 
-
-export type Role = "superadmin" | "billingAdmin" | "productOwner" | "scrumMaster" | "developer" | "tester";
+export type Role = "productOwner";
 
 interface SideNavProps {
   role?: Role;
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-const SidebarAdmin = ({ role = "productOwner", onCollapsedChange }: SideNavProps) => {
+const SidebarProductOwner = ({ role = "productOwner", onCollapsedChange }: SideNavProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
 
   const allNavItems: NavItemType[] = [
     {
       name: "Dashboard",
-      path: role === "superadmin" ? "/superadmin" :
-        role === "billingAdmin" ? "/billing" :
-          role === "scrumMaster" ? "/scrum-master" :
-            role === "developer" ? "/developer" :
-              role === "tester" ? "/qa-tester" :
-                role === "productOwner" ? "/product-owner" :
-                  "/dashboard",
+      path: "/product-owner",
       icon: <LayoutDashboard size={20} />,
-      roles: ["superadmin", "billingAdmin", "ProductOwner", "scrumMaster", "developer", "tester"]
-    },
-    {
-      name: "User Management",
-      path: "/user-management",
-      icon: <Users size={20} />,
-      roles: ["superadmin", "productOwner", "scrumMaster"]
+      roles: ["productOwner"]
     },
     {
       name: "Projects",
-      path: "/project-management",
+      path: "/product-owner/projects", // ✅ Chemin complet
       icon: <GitBranch size={20} />,
-      roles: ["superadmin", "productOwner", "scrumMaster"]
+      roles: ["productOwner"]
     },
+    {
+      name: "Backlog",
+      path: "/product-owner/backlog", // ✅ Chemin complet
+      icon: <ListTodo size={20} />,
+      roles: ["productOwner"]
+    },
+    {
+      name: "Release Planning",
+      path: "/product-owner/release-planning", // ✅ Chemin complet
+      icon: <CalendarRange size={20} />,
+      roles: ["productOwner"]
+    },
+    {
+      name: "Value Metrics",
+      path: "/product-owner/value-metrics", // ✅ Chemin complet
+      icon: <BarChart3 size={20} />,
+      roles: ["productOwner"]
+    }
   ];
 
   useEffect(() => {
@@ -56,8 +63,9 @@ const SidebarAdmin = ({ role = "productOwner", onCollapsedChange }: SideNavProps
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full z-40 bg-sidebar transition-all duration-300 ease-in-out pt-20 ${isCollapsed ? "w-20" : "w-64"
-        }`}
+      className={`fixed left-0 top-0 h-full z-40 bg-sidebar transition-all duration-300 ease-in-out pt-20 ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
     >
       <div className="flex flex-col h-full justify-between">
         <div className="overflow-y-auto">
@@ -80,4 +88,4 @@ const SidebarAdmin = ({ role = "productOwner", onCollapsedChange }: SideNavProps
   );
 };
 
-export default SidebarAdmin;
+export default SidebarProductOwner;

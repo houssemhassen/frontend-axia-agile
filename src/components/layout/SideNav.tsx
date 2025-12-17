@@ -11,14 +11,14 @@ import NavSection from './navigation/NavSection';
 import UserProfile from './navigation/UserProfile';
 import { NavItemType } from './navigation/NavSection';
 
-export type Role = "superadmin" | "billingAdmin" | "productOwner" | "scrumMaster" | "developer" | "tester";
+export type Role = "superadmin" | "billingAdmin" | "ProductOwner" | "scrumMaster" | "developer" | "tester";
 
 interface SideNavProps {
   role?: Role;
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-const SideNav = ({ role = "productOwner", onCollapsedChange }: SideNavProps) => {
+const SideNav = ({ role = "ProductOwner", onCollapsedChange }: SideNavProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
 

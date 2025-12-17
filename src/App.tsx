@@ -18,38 +18,116 @@ import { ReportRoutes } from "./routes/ReportRoutes";
 import { DeveloperRoutes } from "./routes/DeveloperRoutes";
 
 import DashboardLayout from "./components/layout/DashboardLayout";
+import { ProductOwnerRoutes } from "./routes/ProductOwnerRoutes";
 
 const queryClient = new QueryClient();
 
+// Fonction pour normaliser les rôles - GARDEZ camelCase
+const normalizeRole = (inputRole: string): string => {
+  if (!inputRole || inputRole.startsWith('/')) return "";
+  
+  const roleMap: { [key: string]: string } = {
+    'ProductOwner': 'productOwner',
+    'productowner': 'productOwner',
+    'PRODUCTOWNER': 'productOwner',
+    'ScrumMaster': 'scrumMaster',
+    'scrummaster': 'scrumMaster',
+    'SCRUMMASTER': 'scrumMaster',
+    'SuperAdmin': 'superadmin',
+    'superadmin': 'superadmin',
+    'SUPERADMIN': 'superadmin',
+    'Developer': 'developer',
+    'developer': 'developer',
+    'DEVELOPER': 'developer',
+    'BillingAdmin': 'billingAdmin',
+    'billingadmin': 'billingAdmin',
+    'BILLINGADMIN': 'billingAdmin',
+  };
+  
+  return roleMap[inputRole] || inputRole;
+};
+
 const RoleBasedRedirect = () => {
-  const userRole = localStorage.getItem("userRole") || "superadmin";
-
-  if (!userRole) return <Navigate to="/" replace />;
-
-  switch (userRole) {
-    case "admin":
-      return <Navigate to="/admin" replace />;
-    case "superadmin":
-      return <Navigate to="/superadmin" replace />;
-    case "billingAdmin":
-      return <Navigate to="/billing" replace />;
-    case "productOwner":
-      return <Navigate to="/product-owner" replace />;
-    case "scrumMaster":
-      return <Navigate to="/scrum-master" replace />;
-    case "developer":
-      return <Navigate to="/developer" replace />;
-    default:
-      return <Navigate to="/" replace />;
+  let userRole = localStorage.getItem("userRole") || "superadmin";
+  
+  if (userRole.startsWith('/')) {
+    console.log("🚨 Cleaning invalid role:", userRole);
+    userRole = "superadmin";
+    localStorage.setItem("userRole", userRole);
   }
+  
+  userRole = normalizeRole(userRole) || "superadmin";
+
+  const roleRouteMap: { [key: string]: string } = {
+    'superadmin': '/superadmin',
+    'billingAdmin': '/billing',
+    'productOwner': '/product-owner',
+    'scrumMaster': '/scrum-master',
+    'developer': '/developer',
+  };
+
+  return <Navigate to={roleRouteMap[userRole] || '/superadmin'} replace />;
 };
 
 const DashboardWrapper = () => {
-  const userRole = localStorage.getItem("userRole") || "superadmin";
-  console.log("User Role in DashboardWrapper:", userRole);
+  let userRole = localStorage.getItem("userRole");
+  const location = useLocation();
+  
+  console.log("🔍 DashboardWrapper - Raw role from localStorage:", userRole);
+  
+  if (!userRole || userRole.startsWith('/')) {
+    console.log("🚨 Invalid role detected, resetting to superadmin");
+    userRole = "superadmin";
+    localStorage.setItem("userRole", userRole);
+  }
+  
+  userRole = normalizeRole(userRole) || "superadmin";
+  
+  console.log("✅ DashboardWrapper - Normalized role:", userRole);
+  console.log("📍 Current path:", location.pathname);
+
+  // Map des rôles vers leurs routes autorisées
+  const roleRouteMap: { [key: string]: string } = {
+    'productOwner': '/product-owner',
+    'superadmin': '/superadmin',
+    'developer': '/developer',
+    'scrumMaster': '/scrum-master',
+    'billingAdmin': '/billing',
+  };
+
+  const allowedBasePath = roleRouteMap[userRole];
+  
+  // Liste des routes qui ne correspondent PAS au rôle de l'utilisateur
+  const unauthorizedPaths = Object.values(roleRouteMap).filter(
+    path => path !== allowedBasePath
+  );
+  
+  // Vérifier si l'utilisateur essaie d'accéder à une route non autorisée
+  const isUnauthorized = unauthorizedPaths.some(unauthorizedPath =>
+    location.pathname.startsWith(unauthorizedPath)
+  );
+  
+  // Rediriger si accès non autorisé
+  if (isUnauthorized && allowedBasePath) {
+    console.log(`🚫 ACCESS DENIED: Redirecting ${userRole} from ${location.pathname} to ${allowedBasePath}`);
+    return <Navigate to={allowedBasePath} replace />;
+  }
+  
+  // Redirection spéciale pour /projects
+  if (location.pathname === '/projects') {
+    if (userRole === 'productOwner') {
+      console.log("🔀 Redirecting /projects to /product-owner/projects");
+      return <Navigate to="/product-owner/projects" replace />;
+    }
+    // Pour les autres rôles, rediriger vers leur dashboard
+    if (allowedBasePath) {
+      console.log(`🔀 Redirecting /projects to ${allowedBasePath}`);
+      return <Navigate to={allowedBasePath} replace />;
+    }
+  }
 
   return (
-    <DashboardLayout role={userRole as any}>
+    <DashboardLayout role={userRole}>
       <Outlet />
     </DashboardLayout>
   );
@@ -60,11 +138,17 @@ const App = () => {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    const role = localStorage.getItem("userRole");
+    let role = localStorage.getItem("userRole");
+    
+    if (role && role.startsWith('/')) {
+      console.log("🧹 Cleaning invalid role from localStorage:", role);
+      localStorage.removeItem("userRole");
+      role = null;
+    }
 
-    console.log("USER CONNECTED:", user ? JSON.parse(user) : "No user");
-    console.log("ROLE:", role);
-    console.log("ROUTE:", location.pathname);
+    console.log("👤 USER CONNECTED:", user ? JSON.parse(user) : "No user");
+    console.log("🎭 ROLE:", role);
+    console.log("📍 ROUTE:", location.pathname);
   }, [location.pathname]);
 
   return (
@@ -81,6 +165,7 @@ const App = () => {
             <Route path="/" element={<DashboardWrapper />}>
               {DashboardRoutes}
               {AdminRoutes}
+              {ProductOwnerRoutes}
               {SprintRoutes}
               {TeamRoutes}
               {ReportRoutes}

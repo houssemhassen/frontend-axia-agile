@@ -1,12 +1,6 @@
-/**
- * Authentication Context Provider
- * Manages user authentication state and provides auth methods
- */
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, LoginCredentials, RegisterData, LoginResponse, RegisterResponse } from '@/types/api';
 import { authService } from '@/services/authService';
-import { notificationService } from '@/services/notificationService';
 import { toast } from 'sonner';
 
 interface AuthContextType {

@@ -15,100 +15,167 @@ import { authService } from "@/services/authService";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  role?: Role;
+  role?: string;
 }
 
-const DashboardLayout = ({ 
-  children, 
-  role = "productOwner" 
+const DashboardLayout = ({
+  children,
+  role
 }: DashboardLayoutProps) => {
   const [notifications, setNotifications] = useState(5);
   const location = useLocation();
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
-  const [effectiveRole, setEffectiveRole] = useState(role);
+  const [effectiveRole, setEffectiveRole] = useState<string>("");
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Fonction pour normaliser les rôles
+  const normalizeRole = (inputRole: string): string => {
+    if (!inputRole) return "";
+
+    if (inputRole.startsWith('/')) {
+      console.log("⚠️ Invalid role (route detected):", inputRole);
+      return "";
+    }
+
+    const roleMap: { [key: string]: string } = {
+      'ProductOwner': 'productOwner',
+      'productowner': 'productOwner',
+      'PRODUCTOWNER': 'productOwner',
+      'ScrumMaster': 'scrumMaster',
+      'scrummaster': 'scrumMaster',
+      'SCRUMMASTER': 'scrumMaster',
+      'SuperAdmin': 'superadmin',
+      'superadmin': 'superadmin',
+      'SUPERADMIN': 'superadmin',
+      'Developer': 'developer',
+      'developer': 'developer',
+      'DEVELOPER': 'developer',
+      'BillingAdmin': 'billingAdmin',
+      'billingadmin': 'billingAdmin',
+      'BILLINGADMIN': 'billingAdmin',
+    };
+
+    return roleMap[inputRole] || inputRole; // ✅ Pas de .toLowerCase()
+  };
 
   useEffect(() => {
     // Get current user from authService
     const user = authService.getCurrentUser();
+    let userFromStorage = null;
+
     if (user) {
+      console.log("User from authService:", user);
       setCurrentUser(user);
       setUserName(`${user.firstName} ${user.lastName}`);
     } else {
       // Fallback to localStorage if authService doesn't have user
-      const userString = localStorage.getItem("currentUser");
+      const userString = localStorage.getItem("user");
       if (userString) {
         try {
-          const user = JSON.parse(userString);
-          setCurrentUser(user);
-          setUserName(`${user.firstName || 'User'} ${user.lastName || 'Account'}`);
+          userFromStorage = JSON.parse(userString);
+          setCurrentUser(userFromStorage);
+          setUserName(`${userFromStorage.firstName || 'User'} ${userFromStorage.lastName || 'Account'}`);
         } catch (e) {
           console.error("Error parsing user data:", e);
           setUserName("User Account");
         }
       }
     }
-    
-    // Get role from multiple sources with priority
-    const locationRole = location.state?.role;
-    const storedRole = localStorage.getItem("userRole");
-    const userRole = user?.roles?.[0]?.toLowerCase();
-    
-    const roleToUse = locationRole || storedRole || userRole || role;
-    console.log("🔍 Role Debug:", { locationRole, storedRole, userRole, role, roleToUse });
-    setEffectiveRole(roleToUse as Role);
-    
-    // Update localStorage if we have a new role from location
-    if (locationRole && locationRole !== storedRole) {
-      localStorage.setItem("userRole", locationRole);
-    }
-    
-    // Role display names mapping
-    const roleNames: Record<string, string> = {
-      'superadmin': 'SuperAdmin',
-      'billingadmin': 'BillingAdmin', 
-      'productowner': 'ProductOwner',
-      'scrummaster': 'ScrumMaster',
-      'developer': 'Developer',
-      'projectmanager': 'ProjectManager',
-      'tester': 'Tester'
-    };
 
-    // Update display role in localStorage
-    const displayRole = roleNames[roleToUse] || roleToUse;
- //   localStorage.setItem("userRoleDisplay", displayRole);
-    
-  }, [location.state?.role, role]);
+    // ❌ NE JAMAIS utiliser location.pathname comme role
+    const storedRole = localStorage.getItem("userRole");
+
+    // Essayer d'obtenir le rôle de l'utilisateur
+    let userRoleFromData = null;
+    const currentUserData = user || userFromStorage;
+
+    if (currentUserData) {
+      userRoleFromData =
+        currentUserData.roleName ||
+        currentUserData.role ||
+        (Array.isArray(currentUserData.roles) ? currentUserData.roles[0] : null);
+    }
+
+    const propsRole = role;
+
+    // Priorité : userRoleFromData > storedRole (SI VALIDE) > propsRole
+    let rawRole = "";
+
+    if (userRoleFromData) {
+      rawRole = userRoleFromData;
+    } else if (storedRole && !storedRole.startsWith('/')) {
+      rawRole = storedRole;
+    } else if (propsRole && !propsRole.startsWith('/')) {
+      rawRole = propsRole;
+    } else {
+      rawRole = "superadmin";
+    }
+
+    const normalizedRole = normalizeRole(rawRole);
+
+    console.log("🔍 Role Debug:", {
+      storedRole,
+      userRoleFromData,
+      propsRole,
+      rawRole,
+      normalizedRole,
+      currentPath: location.pathname
+    });
+
+    // Ne mettre à jour que si on a un rôle valide
+    if (normalizedRole) {
+      setEffectiveRole(normalizedRole);
+
+      // Update localStorage ONLY with valid normalized role
+      if (normalizedRole !== storedRole) {
+        console.log("✅ Updating localStorage with correct role:", normalizedRole);
+        localStorage.setItem("userRole", normalizedRole);
+      }
+    }
+
+  }, [role]); // ✅ NE PAS inclure location dans les dépendances
 
   // Get proper role for display
   const getDisplayRole = (): string => {
+    const roleDisplayNames: Record<string, string> = {
+      'superadmin': 'Super Admin',
+      'billingAdmin': 'Billing Admin',
+      'productOwner': 'Product Owner',
+      'scrumMaster': 'Scrum Master',
+      'developer': 'Developer',
+      'projectManager': 'Project Manager',
+      'tester': 'Tester'
+    };
+
     const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      return currentUser.roles?.[0] || "Unknown";
+    if (currentUser && currentUser.roleName) {
+      const normalized = normalizeRole(currentUser.roleName);
+      return roleDisplayNames[normalized] || currentUser.roleName;
     }
-    return localStorage.getItem("userRoleDisplay") || effectiveRole;
+
+    return roleDisplayNames[effectiveRole] || effectiveRole;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen overflow-hidden">
-        {/* ✅ Sidebar - NO className prop, wrapped in styled div */}
+        {/* Sidebar */}
         <div className="w-64 bg-white border-r border-gray-200">
-          <SideNav role={effectiveRole} />
+          <SideNav role={effectiveRole as Role} />
         </div>
-        
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* ✅ Header - Uses setNotifications, NOT onNotificationClear */}
-          <DashboardHeader 
+          {/* Header */}
+          <DashboardHeader
             userName={userName}
-            role={effectiveRole}
+            role={effectiveRole as Role}
             displayRole={getDisplayRole()}
             notifications={notifications}
             setNotifications={setNotifications}
           />
-          
+
           {/* Page Content */}
           <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
@@ -116,28 +183,6 @@ const DashboardLayout = ({
             </div>
           </main>
         </div>
-      </div>
-
-      {/* ✅ Floating Action Button - NO onProjectCreated prop */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              size="lg"
-              className="rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <span className="text-xl">+</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Create New Project</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <ProjectCreationForm />
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
     </div>
   );
