@@ -15,67 +15,34 @@ import { authService } from "@/services/authService";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  role?: string;
+  role?: Role;
 }
 
 const DashboardLayout = ({
   children,
-  role
+  role = "ProductOwner"
 }: DashboardLayoutProps) => {
   const [notifications, setNotifications] = useState(5);
   const location = useLocation();
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
-  const [effectiveRole, setEffectiveRole] = useState<string>("");
+  const [effectiveRole, setEffectiveRole] = useState(role);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Fonction pour normaliser les rôles
-  const normalizeRole = (inputRole: string): string => {
-    if (!inputRole) return "";
-
-    if (inputRole.startsWith('/')) {
-      console.log("⚠️ Invalid role (route detected):", inputRole);
-      return "";
-    }
-
-    const roleMap: { [key: string]: string } = {
-      'ProductOwner': 'productOwner',
-      'productowner': 'productOwner',
-      'PRODUCTOWNER': 'productOwner',
-      'ScrumMaster': 'scrumMaster',
-      'scrummaster': 'scrumMaster',
-      'SCRUMMASTER': 'scrumMaster',
-      'SuperAdmin': 'superadmin',
-      'superadmin': 'superadmin',
-      'SUPERADMIN': 'superadmin',
-      'Developer': 'developer',
-      'developer': 'developer',
-      'DEVELOPER': 'developer',
-      'BillingAdmin': 'billingAdmin',
-      'billingadmin': 'billingAdmin',
-      'BILLINGADMIN': 'billingAdmin',
-    };
-
-    return roleMap[inputRole] || inputRole; // ✅ Pas de .toLowerCase()
-  };
-
   useEffect(() => {
-    // Get current user from authService
+    // âœ… Get current user from authService
     const user = authService.getCurrentUser();
-    let userFromStorage = null;
-
     if (user) {
-      console.log("User from authService:", user);
       setCurrentUser(user);
       setUserName(`${user.firstName} ${user.lastName}`);
     } else {
       // Fallback to localStorage if authService doesn't have user
-      const userString = localStorage.getItem("user");
+      const userString = localStorage.getItem("currentUser");
       if (userString) {
         try {
-          userFromStorage = JSON.parse(userString);
-          setCurrentUser(userFromStorage);
-          setUserName(`${userFromStorage.firstName || 'User'} ${userFromStorage.lastName || 'Account'}`);
+          const user = JSON.parse(userString);
+          setCurrentUser(user);
+          setUserName(`${user.firstName || 'User'} ${user.lastName || 'Account'}`);
         } catch (e) {
           console.error("Error parsing user data:", e);
           setUserName("User Account");
@@ -83,86 +50,54 @@ const DashboardLayout = ({
       }
     }
 
-    // ❌ NE JAMAIS utiliser location.pathname comme role
+    // ✅ Get role from multiple sources with priority
+    // NOTE: Do NOT use location.pathname as role - that's a path, not a role!
     const storedRole = localStorage.getItem("userRole");
+    const userRole = user?.roleName;
 
-    // Essayer d'obtenir le rôle de l'utilisateur
-    let userRoleFromData = null;
-    const currentUserData = user || userFromStorage;
+    // Use props role, stored role, or user role - never the path
+    const roleToUse = role || storedRole || userRole || "ProductOwner";
+    setEffectiveRole(roleToUse as Role);
 
-    if (currentUserData) {
-      userRoleFromData =
-        currentUserData.roleName ||
-        currentUserData.role ||
-        (Array.isArray(currentUserData.roles) ? currentUserData.roles[0] : null);
-    }
-
-    const propsRole = role;
-
-    // Priorité : userRoleFromData > storedRole (SI VALIDE) > propsRole
-    let rawRole = "";
-
-    if (userRoleFromData) {
-      rawRole = userRoleFromData;
-    } else if (storedRole && !storedRole.startsWith('/')) {
-      rawRole = storedRole;
-    } else if (propsRole && !propsRole.startsWith('/')) {
-      rawRole = propsRole;
-    } else {
-      rawRole = "superadmin";
-    }
-
-    const normalizedRole = normalizeRole(rawRole);
-
-    console.log("🔍 Role Debug:", {
-      storedRole,
-      userRoleFromData,
-      propsRole,
-      rawRole,
-      normalizedRole,
-      currentPath: location.pathname
-    });
-
-    // Ne mettre à jour que si on a un rôle valide
-    if (normalizedRole) {
-      setEffectiveRole(normalizedRole);
-
-      // Update localStorage ONLY with valid normalized role
-      if (normalizedRole !== storedRole) {
-        console.log("✅ Updating localStorage with correct role:", normalizedRole);
-        localStorage.setItem("userRole", normalizedRole);
-      }
-    }
-
-  }, [role]); // ✅ NE PAS inclure location dans les dépendances
-
-  // Get proper role for display
-  const getDisplayRole = (): string => {
-    const roleDisplayNames: Record<string, string> = {
+    // ✅ Role display names mapping
+    const roleNames: Record<string, string> = {
       'superadmin': 'Super Admin',
-      'billingAdmin': 'Billing Admin',
+      'SuperAdmin': 'Super Admin',
+      'billingadmin': 'Billing Admin',
+      'BillingAdmin': 'Billing Admin',
+      'ProductOwner': 'Product Owner',
       'productOwner': 'Product Owner',
+      'scrummaster': 'Scrum Master',
+      'ScrumMaster': 'Scrum Master',
       'scrumMaster': 'Scrum Master',
       'developer': 'Developer',
-      'projectManager': 'Project Manager',
+      'Developer': 'Developer',
+      'projectmanager': 'Project Manager',
+      'ProjectManager': 'Project Manager',
       'tester': 'Tester'
     };
 
-    const currentUser = authService.getCurrentUser();
-    if (currentUser && currentUser.roleName) {
-      const normalized = normalizeRole(currentUser.roleName);
-      return roleDisplayNames[normalized] || currentUser.roleName;
-    }
+    // ✅ Update display role in localStorage
+    const displayRole = roleNames[roleToUse] || roleToUse;
+    //   localStorage.setItem("userRoleDisplay", displayRole);
 
-    return roleDisplayNames[effectiveRole] || effectiveRole;
+  }, [location.pathname, role]);
+
+  // âœ… Get proper role for display
+  const getDisplayRole = (): string => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      return currentUser.roleName;
+    }
+    return localStorage.getItem("userRoleDisplay") || effectiveRole;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
+        {/* Sidebar - NO className prop */}
         <div className="w-64 bg-white border-r border-gray-200">
-          <SideNav role={effectiveRole as Role} />
+          <SideNav role={effectiveRole} />
         </div>
 
         {/* Main Content */}
@@ -170,7 +105,7 @@ const DashboardLayout = ({
           {/* Header */}
           <DashboardHeader
             userName={userName}
-            role={effectiveRole as Role}
+            role={effectiveRole}
             displayRole={getDisplayRole()}
             notifications={notifications}
             setNotifications={setNotifications}
@@ -183,6 +118,28 @@ const DashboardLayout = ({
             </div>
           </main>
         </div>
+      </div>
+
+      {/* Floating Action Button for Quick Project Creation */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              size="lg"
+              className="rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <span className="text-xl">+</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Create New Project</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <ProjectCreationForm />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

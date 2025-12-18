@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
@@ -19,107 +19,119 @@ import { DeveloperRoutes } from "./routes/DeveloperRoutes";
 
 import DashboardLayout from "./components/layout/DashboardLayout";
 import { ProductOwnerRoutes } from "./routes/ProductOwnerRoutes";
+import { authService } from "@/services/authService";
 
 const queryClient = new QueryClient();
 
-// Fonction pour normaliser les rôles - GARDEZ camelCase
-const normalizeRole = (inputRole: string): string => {
+// Function to normalize roles to consistent camelCase format
+const normalizeRole = (inputRole: string | null | undefined): string => {
   if (!inputRole || inputRole.startsWith('/')) return "";
   
+  // Convert to lowercase for matching
+  const lowerRole = inputRole.toLowerCase();
+  
   const roleMap: { [key: string]: string } = {
-    'ProductOwner': 'productOwner',
     'productowner': 'productOwner',
-    'PRODUCTOWNER': 'productOwner',
-    'ScrumMaster': 'scrumMaster',
     'scrummaster': 'scrumMaster',
-    'SCRUMMASTER': 'scrumMaster',
-    'SuperAdmin': 'superadmin',
     'superadmin': 'superadmin',
-    'SUPERADMIN': 'superadmin',
-    'Developer': 'developer',
+    'superadministrateur': 'superadmin',
     'developer': 'developer',
-    'DEVELOPER': 'developer',
-    'BillingAdmin': 'billingAdmin',
+    'développeur': 'developer',
+    'developpeur': 'developer',
     'billingadmin': 'billingAdmin',
-    'BILLINGADMIN': 'billingAdmin',
+    'administrateur': 'superadmin',
+    'projectmanager': 'projectManager',
+    'chefdeprojet': 'projectManager',
   };
   
-  return roleMap[inputRole] || inputRole;
+  return roleMap[lowerRole] || inputRole;
+};
+
+// Get the correct role from the user object, with localStorage as fallback
+const getAuthenticatedUserRole = (): string => {
+  // Priority 1: Get role from the actual user object (most reliable)
+  const currentUser = authService.getCurrentUser();
+  if (currentUser?.roleName) {
+    const normalizedRole = normalizeRole(currentUser.roleName);
+    // Sync localStorage with the correct role from user object
+    const storedRole = localStorage.getItem("userRole");
+    if (storedRole !== currentUser.roleName) {
+      console.log("🔄 Syncing localStorage role with user data:", currentUser.roleName);
+      localStorage.setItem("userRole", currentUser.roleName);
+    }
+    return normalizedRole;
+  }
+  
+  // Priority 2: Fall back to localStorage (may be stale)
+  const storedRole = localStorage.getItem("userRole");
+  if (storedRole && !storedRole.startsWith('/')) {
+    return normalizeRole(storedRole);
+  }
+  
+  // No authenticated user - return empty (will redirect to login)
+  return "";
+};
+
+// Map roles to their dashboard routes
+const ROLE_ROUTE_MAP: { [key: string]: string } = {
+  'productOwner': '/product-owner',
+  'superadmin': '/superadmin',
+  'developer': '/developer',
+  'scrumMaster': '/scrum-master',
+  'billingAdmin': '/billing',
+  'projectManager': '/project-manager',
 };
 
 const RoleBasedRedirect = () => {
-  let userRole = localStorage.getItem("userRole") || "superadmin";
+  const userRole = getAuthenticatedUserRole();
   
-  if (userRole.startsWith('/')) {
-    console.log("🚨 Cleaning invalid role:", userRole);
-    userRole = "superadmin";
-    localStorage.setItem("userRole", userRole);
+  if (!userRole) {
+    // Not authenticated, redirect to home/login
+    return <Navigate to="/" replace />;
   }
   
-  userRole = normalizeRole(userRole) || "superadmin";
-
-  const roleRouteMap: { [key: string]: string } = {
-    'superadmin': '/superadmin',
-    'billingAdmin': '/billing',
-    'productOwner': '/product-owner',
-    'scrumMaster': '/scrum-master',
-    'developer': '/developer',
-  };
-
-  return <Navigate to={roleRouteMap[userRole] || '/superadmin'} replace />;
+  const targetRoute = ROLE_ROUTE_MAP[userRole] || '/superadmin';
+  console.log("🔀 RoleBasedRedirect: Redirecting", userRole, "to", targetRoute);
+  return <Navigate to={targetRoute} replace />;
 };
 
 const DashboardWrapper = () => {
-  let userRole = localStorage.getItem("userRole");
   const location = useLocation();
   
-  console.log("🔍 DashboardWrapper - Raw role from localStorage:", userRole);
+  // Get the ACTUAL user role (synced from user object)
+  const userRole = getAuthenticatedUserRole();
   
-  if (!userRole || userRole.startsWith('/')) {
-    console.log("🚨 Invalid role detected, resetting to superadmin");
-    userRole = "superadmin";
-    localStorage.setItem("userRole", userRole);
+  // If no authenticated user, redirect to home
+  if (!userRole) {
+    console.log("⚠️ No authenticated user, redirecting to home");
+    return <Navigate to="/" replace />;
   }
   
-  userRole = normalizeRole(userRole) || "superadmin";
+  const allowedBasePath = ROLE_ROUTE_MAP[userRole];
   
-  console.log("✅ DashboardWrapper - Normalized role:", userRole);
-  console.log("📍 Current path:", location.pathname);
-
-  // Map des rôles vers leurs routes autorisées
-  const roleRouteMap: { [key: string]: string } = {
-    'productOwner': '/product-owner',
-    'superadmin': '/superadmin',
-    'developer': '/developer',
-    'scrumMaster': '/scrum-master',
-    'billingAdmin': '/billing',
-  };
-
-  const allowedBasePath = roleRouteMap[userRole];
+  // Get all role-specific paths that this user should NOT access
+  const unauthorizedPaths = Object.entries(ROLE_ROUTE_MAP)
+    .filter(([role, _]) => role !== userRole)
+    .map(([_, path]) => path);
   
-  // Liste des routes qui ne correspondent PAS au rôle de l'utilisateur
-  const unauthorizedPaths = Object.values(roleRouteMap).filter(
-    path => path !== allowedBasePath
-  );
-  
-  // Vérifier si l'utilisateur essaie d'accéder à une route non autorisée
+  // Check if user is trying to access an unauthorized role-specific route
   const isUnauthorized = unauthorizedPaths.some(unauthorizedPath =>
     location.pathname.startsWith(unauthorizedPath)
   );
   
-  // Rediriger si accès non autorisé
+  // Redirect if accessing unauthorized route
   if (isUnauthorized && allowedBasePath) {
     console.log(`🚫 ACCESS DENIED: Redirecting ${userRole} from ${location.pathname} to ${allowedBasePath}`);
     return <Navigate to={allowedBasePath} replace />;
   }
   
-  // Redirection spéciale pour /projects
+  // Special handling for /projects route
   if (location.pathname === '/projects') {
     if (userRole === 'productOwner') {
       console.log("🔀 Redirecting /projects to /product-owner/projects");
       return <Navigate to="/product-owner/projects" replace />;
     }
-    // Pour les autres rôles, rediriger vers leur dashboard
+    // For other roles, redirect to their dashboard
     if (allowedBasePath) {
       console.log(`🔀 Redirecting /projects to ${allowedBasePath}`);
       return <Navigate to={allowedBasePath} replace />;
@@ -137,18 +149,15 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    let role = localStorage.getItem("userRole");
+    // Debug logging
+    const user = authService.getCurrentUser();
+    const storedRole = localStorage.getItem("userRole");
     
-    if (role && role.startsWith('/')) {
-      console.log("🧹 Cleaning invalid role from localStorage:", role);
-      localStorage.removeItem("userRole");
-      role = null;
+    // Auto-sync: If user is logged in but localStorage role doesn't match, fix it
+    if (user?.roleName && storedRole !== user.roleName) {
+      console.log("⚠️ Role mismatch detected! Fixing localStorage...");
+      localStorage.setItem("userRole", user.roleName);
     }
-
-    console.log("👤 USER CONNECTED:", user ? JSON.parse(user) : "No user");
-    console.log("🎭 ROLE:", role);
-    console.log("📍 ROUTE:", location.pathname);
   }, [location.pathname]);
 
   return (

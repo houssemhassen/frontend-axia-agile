@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchAllProjects, createProject as createProjectAPI } from "@/services/projectService";
+import { 
+  fetchAllProjects, 
+  fetchProjectById as fetchProjectByIdAPI,
+  createProject as createProjectAPI, 
+} from "@/services/projectService";
 import { toast } from "sonner";
 
 interface CreateProjectData {
@@ -33,6 +37,20 @@ export const UseProjectManagement = () => {
       return response.data;
     },
   });
+
+  // Fetch project by ID - Return a function that creates the query
+  const useProjectById = (projectId: number | null) => {
+    return useQuery({
+      queryKey: ["project", projectId],
+      queryFn: async () => {
+        if (!projectId) throw new Error("Project ID is required");
+        const response = await fetchProjectByIdAPI(projectId);
+        console.log('Fetched project by ID:', response.data);
+        return response.data;
+      },
+      enabled: !!projectId, // Only run if projectId exists
+    });
+  };
 
   // Create project mutation
   const {
@@ -69,6 +87,9 @@ export const UseProjectManagement = () => {
     isErrorProjects,
     projectsError,
     refetchProjects,
+
+    // Fetch project by ID
+    useProjectById,
 
     // Create project
     createProject: createProjectMutation,

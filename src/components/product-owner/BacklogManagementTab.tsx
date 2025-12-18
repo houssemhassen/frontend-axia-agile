@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BacklogItemType } from '@/types/backlog';
 import BacklogListView from './backlog/BacklogListView';
 import BacklogHealthCards from './backlog/BacklogHealthCards';
 import UserStoryMap from "./UserStoryMap";
 import { Dialog } from "@/components/ui/dialog";
-import AddBacklogItemForm from './backlog/AddBacklogItemForm';
-import { useBacklogItems } from '@/hooks/useBacklogItems';
+import { AddBacklogDialog } from './backlog/AddBacklogDialog';
 
 const BacklogManagementTab = () => {
   const [activeView, setActiveView] = useState("list");
@@ -17,13 +15,6 @@ const BacklogManagementTab = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // Use our custom hook for backlog management
-  const { 
-    items: backlogItems,
-    updateItemPriority,
-    assignItem,
-    deleteItem,
-    updateItem
-  } = useBacklogItems();
 
   // Define styling for priority badges
   const priorityColors = {
@@ -49,31 +40,14 @@ const BacklogManagementTab = () => {
 
   const handleEditItem = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    
-    const item = backlogItems.find(item => item.id === id);
-    if (item) {
-      setSelectedItem(item);
-      setIsEditDialogOpen(true);
-    }
+  
   };
 
-  const handleChangePriority = (id: string, priority: BacklogItemType['priority']) => {
-    updateItemPriority(id, priority);
-  };
 
-  const handleAssign = (id: string, user: string) => {
-    assignItem(id, user || undefined);
-  };
 
-  const handleDelete = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    deleteItem(id);
-  };
 
-  const handleSaveItem = (updatedItem: BacklogItemType) => {
-    updateItem(updatedItem);
-    setIsEditDialogOpen(false);
-  };
+
+
 
   // Import the refactored dialog component dynamically to keep this file smaller
   const EditBacklogItemDialog = React.lazy(() => import('../backlog/EditBacklogItemDialog'));
@@ -95,15 +69,7 @@ const BacklogManagementTab = () => {
         </TabsList>
         
         <TabsContent value="list">
-          <BacklogListView
-            backlogItems={backlogItems}
-            priorityColors={priorityColors}
-            statusColors={statusColors}
-            onEditItem={handleEditItem}
-            onChangePriority={handleChangePriority}
-            onAssign={handleAssign}
-            onDelete={handleDelete}
-          />
+      
         </TabsContent>
         
         <TabsContent value="map">
@@ -114,22 +80,9 @@ const BacklogManagementTab = () => {
       <BacklogHealthCards />
 
       {/* Add Dialog */}
-      <AddBacklogItemForm 
-        isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-      />
-
+   
       {/* Edit Dialog */}
-      <React.Suspense fallback={<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />}>
-        {selectedItem && (
-          <EditBacklogItemDialog
-            isOpen={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            item={selectedItem}
-            onSave={handleSaveItem}
-          />
-        )}
-      </React.Suspense>
+     
     </>
   );
 };

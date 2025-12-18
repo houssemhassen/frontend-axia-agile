@@ -1,15 +1,18 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar, Search, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectMember {
+  firstName: any;
+  lastName: any;
   id: number;
   name: string;
   avatar: string;
+  profilePicture?: string;
 }
 
 interface Project {
@@ -39,7 +42,13 @@ const ProjectList = ({
   getStatusBadge,
   truncateText
 }: ProjectListProps) => {
-  console.log('Rendering ProjectList with projects:', projects);
+  const navigate = useNavigate();
+
+  const handleProjectClick = (projectId: number) => {
+    onProjectClick(projectId);
+    navigate(`/product-owner/projects/details/${projectId}`);
+  };
+
   if (projects?.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -62,7 +71,7 @@ const ProjectList = ({
           <div
             key={project.id}
             className="border rounded-lg p-4 hover:border-primary cursor-pointer transition-colors"
-            onClick={() => onProjectClick(project.id)}
+            onClick={() => handleProjectClick(project.id)}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -99,21 +108,24 @@ const ProjectList = ({
                 </Badge>
               </div>
 
-              {/*  <div className="flex -space-x-2">
-                {project.members.slice(0, 3).map((member) => (
+              <div className="flex -space-x-2">
+                {project.members && project.members.slice(0, 3).map((member) => (
                   <Avatar key={member.id} className="border-2 border-background h-7 w-7">
-                    <AvatarImage src={member.avatar} alt={member.name} />
+                    <AvatarImage
+                      src={member.profilePicture || undefined}
+                      alt={`${member.firstName} ${member.lastName}`}
+                    />
                     <AvatarFallback className="text-xs">
-                      {member.name.split(' ').map(n => n[0]).join('')}
+                      {member.firstName?.[0]}{member.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
                 ))}
-                {project.members.length > 3 && (
-                  <div className="flex items-center justify-center rounded-full bg-muted text-muted-foreground h-7 w-7 text-xs">
+                {project.members && project.members.length > 3 && (
+                  <div className="flex items-center justify-center rounded-full bg-muted text-muted-foreground h-7 w-7 text-xs border-2 border-background">
                     +{project.members.length - 3}
                   </div>
                 )}
-              </div> */}
+              </div>
             </div>
           </div>
         ))}

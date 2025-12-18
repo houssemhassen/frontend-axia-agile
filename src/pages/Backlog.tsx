@@ -7,9 +7,9 @@ import BacklogTable from "@/components/backlog/BacklogTable";
 import BacklogSummary from "@/components/backlog/BacklogSummary";
 import AddBacklogItemDialog from "@/components/backlog/AddBacklogItemDialog";
 import EditBacklogItemDialog from "@/components/backlog/EditBacklogItemDialog";
-import { useBacklogItems } from "@/hooks/useBacklogItems";
+/* import { useBacklogItems } from "@/hooks/UseBacklogManagement";
 import { BacklogItemType } from '@/types/backlog';
-
+ */
 const Backlog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState("all");
@@ -18,15 +18,15 @@ const Backlog = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newItemTitle, setNewItemTitle] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
-  const [newItemType, setNewItemType] = useState<BacklogItemType['type']>("story");
-  const [newItemPriority, setNewItemPriority] = useState<BacklogItemType['priority']>("medium");
+/*   const [newItemType, setNewItemType] = useState<BacklogItemType['type']>("story");
+  const [newItemPriority, setNewItemPriority] = useState<BacklogItemType['priority']>("medium"); */
   const [quickAddMode, setQuickAddMode] = useState(false);
   const [quickAddInput, setQuickAddInput] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
-
+/*   const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
+ */
   // Use our custom hook for backlog items
-  const { 
+/*   const { 
     items: backlogItems, 
     totalItems, 
     updateFilters,
@@ -40,21 +40,21 @@ const Backlog = () => {
       search: searchTerm
     }
   });
-
+ */
   // Filter backlog items based on filters
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    updateFilters({ status: value });
+  //  updateFilters({ status: value });
   };
 
   const handlePriorityFilterChange = (value: string) => {
     setPriorityFilter(value);
-    updateFilters({ priority: value });
+//    updateFilters({ priority: value });
   };
 
   const handleSearchTermChange = (value: string) => {
     setSearchTerm(value);
-    updateFilters({ search: value });
+ //   updateFilters({ search: value });
   };
 
   const handleAddItem = () => {
@@ -62,21 +62,21 @@ const Backlog = () => {
   };
 
   const handleItemClick = (itemId: string) => {
-    const item = backlogItems.find(item => item.id === itemId);
+   /*  const item = backlogItems.find(item => item.id === itemId);
     if (item) {
       setSelectedItem(item);
       setIsEditDialogOpen(true);
-    }
+    } */
   };
 
-  const handleUpdateItem = async (updatedItem: BacklogItemType) => {
+/*   const handleUpdateItem = async (updatedItem: BacklogItemType) => {
     await updateItem(updatedItem);
-  };
+  }; */
 
   const handleAddNewItem = async () => {
     if (!newItemTitle.trim()) return;
 
-    await createItem({
+/*     await createItem({
       title: newItemTitle,
       description: newItemDescription,
       type: newItemType,
@@ -90,13 +90,13 @@ const Backlog = () => {
     setNewItemTitle("");
     setNewItemDescription("");
     setNewItemType("story");
-    setNewItemPriority("medium");
+    setNewItemPriority("medium"); */
     setIsAddDialogOpen(false);
   };
 
   const handleQuickAdd = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && quickAddInput.trim() !== '') {
-      await createItem({
+   /*    await createItem({
         title: quickAddInput,
         description: "Added via quick-add",
         type: "story",
@@ -106,7 +106,7 @@ const Backlog = () => {
         status: "unassigned", // Add the required status field
         tags: []
       });
-
+ */
       setQuickAddInput("");
       setQuickAddMode(false);
     }

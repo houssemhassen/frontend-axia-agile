@@ -11,6 +11,17 @@ export const fetchAllProjects = async () => {
     }
 };
 
+export const fetchProjectById = async (projectId: number) => {
+    try {
+        const response = await api.get(`/project/${projectId}`);
+        console.log('Response:', response.data);
+        return response;
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        throw error;
+    }
+};
+
 export const createProject = async (projectData: {
     name: string;
     description: string;

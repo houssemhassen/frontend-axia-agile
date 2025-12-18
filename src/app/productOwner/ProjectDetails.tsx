@@ -13,33 +13,39 @@ import {
   FileEdit
 } from "lucide-react";
 import { toast } from "sonner";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-  status: string;
-  progress: number;
-  team: string;
-  members: number;
-  deadline: string;
-  priority: string;
-  isStarred: boolean;
-}
+import { UseProjectManagement } from "@/hooks/UseProjectManagement";
+import { formatDate } from "@/lib/utils";
+import { UseBacklogManagement } from "@/hooks/UseBacklogManagement";
+import { AddBacklogDialog } from "@/components/product-owner/backlog/AddBacklogDialog";
 
 const ProjectDetails = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string>("projectManager");
+  const [isAddBacklogOpen, setIsAddBacklogOpen] = useState(false);
+
+  const { useProjectById } = UseProjectManagement();
+  const { useBacklogsByProject } = UseBacklogManagement();
+
+  // Utiliser le hook pour fetcher le projet
+  const {
+    data: project,
+    isLoading: loading,
+    isError,
+    error
+  } = useProjectById(projectId ? Number(projectId) : null);
+
+  // Fetcher les backlogs pour ce projet
+  const {
+    data: backlogs = [],
+    isLoading: isLoadingBacklogs,
+  } = useBacklogsByProject(projectId ? Number(projectId) : null);
 
   useEffect(() => {
     const stateRole = location.state?.role;
@@ -50,89 +56,14 @@ const ProjectDetails = () => {
     } else if (storedRole) {
       setRole(storedRole);
     }
+  }, [location]);
 
-    // Fetch project details - using mock data for now
-    const fetchProject = () => {
-      const projects = [
-        {
-          id: 1,
-          name: "Mobile App Redesign",
-          description: "Redesign of client mobile application with focus on improved UX",
-          status: "In Progress",
-          progress: 65,
-          team: "Product Design Team",
-          members: 8,
-          deadline: "Oct 15, 2023",
-          priority: "High",
-          isStarred: true
-        },
-        {
-          id: 2,
-          name: "E-commerce Platform",
-          description: "Building a new e-commerce solution for retail client",
-          status: "In Progress",
-          progress: 45,
-          team: "Web Dev Team",
-          members: 12,
-          deadline: "Nov 30, 2023",
-          priority: "Medium",
-          isStarred: false
-        },
-        {
-          id: 3,
-          name: "Analytics Dashboard",
-          description: "Internal analytics dashboard for marketing department",
-          status: "Review",
-          progress: 90,
-          team: "Analytics Team",
-          members: 5,
-          deadline: "Oct 5, 2023",
-          priority: "Medium",
-          isStarred: true
-        },
-        {
-          id: 4,
-          name: "CRM Implementation",
-          description: "Integration and rollout of new CRM system",
-          status: "Planning",
-          progress: 25,
-          team: "CRM Team",
-          members: 7,
-          deadline: "Dec 20, 2023",
-          priority: "High",
-          isStarred: false
-        },
-        {
-          id: 5,
-          name: "API Modernization",
-          description: "Updating legacy APIs to modern standards",
-          status: "In Progress",
-          progress: 55,
-          team: "Backend Team",
-          members: 6,
-          deadline: "Nov 10, 2023",
-          priority: "Low",
-          isStarred: false
-        }
-      ];
-
-      const id = parseInt(projectId || "0");
-      const foundProject = projects.find(p => p.id === id);
-
-      if (foundProject) {
-        setProject(foundProject);
-      } else {
-        toast.error("Project not found", {
-          description: "Could not find the requested project"
-        });
-        navigate("/projects");
-      }
-
-      setLoading(false);
-    };
-
-    fetchProject();
-  }, [projectId, location, navigate]);
+  useEffect(() => {
+    if (isError) {
+      console.error("Error:", error);
+      toast.error("Failed to load project");
+    }
+  }, [isError, error]);
 
   const handleGoBack = () => {
     navigate("/projects", { state: { role } });
@@ -218,19 +149,38 @@ const ProjectDetails = () => {
             <CardContent>
               <div className="text-2xl font-bold flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                {project.members} members
+                {project.members.length} members
               </div>
-              <p className="text-sm text-muted-foreground mt-1">{project.team}</p>
+
+              {/* Afficher les noms des membres */}
+              <div className="mt-2 flex flex-wrap gap-1">
+                {project.members.slice(0, 3).map((member) => (
+                  <span
+                    key={member.id}
+                    className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded"
+                  >
+                    {member.firstName} {member.lastName}
+                  </span>
+                ))}
+                {project.members.length > 3 && (
+                  <span className="text-xs text-muted-foreground px-2 py-1">
+                    +{project.members.length - 3} more
+                  </span>
+                )}
+              </div>
+
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Deadline</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Deadline
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold flex items-center gap-2">
                 <CalendarClock className="h-5 w-5" />
-                {project.deadline}
+                {formatDate(project.endDate)}
               </div>
             </CardContent>
           </Card>
@@ -258,7 +208,7 @@ const ProjectDetails = () => {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="backlogs">Backlogs</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="files">Files</TabsTrigger>
           </TabsList>
@@ -273,7 +223,7 @@ const ProjectDetails = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-2 p-4 border rounded-lg">
-                    <p className="text-muted-foreground text-sm">Tasks</p>
+                    <p className="text-muted-foreground text-sm">Backlogs</p>
                     <div className="flex justify-between items-center">
                       <div className="text-2xl font-bold">24</div>
                       <div className="flex flex-col text-right">
@@ -300,22 +250,56 @@ const ProjectDetails = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="tasks">
+          <TabsContent value="backlogs">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Project Tasks</CardTitle>
-                <Button size="sm">
+                <CardTitle>Project Backlogs</CardTitle>
+                <Button size="sm" onClick={() => setIsAddBacklogOpen(true)}>
                   <FileEdit className="h-4 w-4 mr-1" />
-                  Add Task
+                  Add Backlog
                 </Button>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-8 text-muted-foreground">
-                  Task management view is under development.
-                </p>
+                {isLoadingBacklogs ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                  </div>
+                ) : backlogs.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">
+                    No backlogs yet. Click "Add Backlog" to create one.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {backlogs.map((backlog: any) => (
+                      <div
+                        key={backlog.id}
+                        className="p-4 border rounded-lg hover:bg-accent transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{backlog.title}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {backlog.description}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className={getPriorityColor(backlog.priority)}>
+                            {backlog.priority}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                          <span>Status: {backlog.status}</span>
+                          {backlog.estimatedHours && (
+                            <span>Est: {backlog.estimatedHours}h</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="timeline">
             <Card>
               <CardHeader>
@@ -342,6 +326,13 @@ const ProjectDetails = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AddBacklogDialog
+        open={isAddBacklogOpen}
+        onOpenChange={setIsAddBacklogOpen}
+        projectId={projectId ? Number(projectId) : 0}
+        members={project?.members || []}
+      />
     </>
   );
 };
