@@ -265,32 +265,59 @@ const ProjectDetails = () => {
                     <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                   </div>
                 ) : backlogs.length === 0 ? (
-                  <p className="text-center py-8 text-muted-foreground">
-                    No backlogs yet. Click "Add Backlog" to create one.
-                  </p>
+                  <div className="text-center py-12">
+                    <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-muted flex items-center justify-center">
+                      <FileEdit className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground mb-4">
+                      No backlogs yet. Click "Add Backlog" to create one.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsAddBacklogOpen(true)}
+                    >
+                      <FileEdit className="h-4 w-4 mr-2" />
+                      Create Your First Backlog
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {backlogs.map((backlog: any) => (
                       <div
-                        key={backlog.id}
-                        className="p-4 border rounded-lg hover:bg-accent transition-colors"
+                        key={backlog.Id}
+                        className="p-4 border rounded-lg hover:bg-accent transition-colors cursor-pointer"
                       >
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-semibold">{backlog.title}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {backlog.description}
-                            </p>
+                            <h4 className="font-semibold text-lg">{backlog.Nom}</h4>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                              <span>
+                                Created: {formatDate(backlog.DateCreation)}
+                              </span>
+                              <span>
+                                User Stories: {backlog.UserStories?.length || 0}
+                              </span>
+                              {backlog.SprintId > 0 && (
+                                <Badge variant="secondary">
+                                  Sprint {backlog.SprintId}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <Badge variant="outline" className={getPriorityColor(backlog.priority)}>
-                            {backlog.priority}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                          <span>Status: {backlog.status}</span>
-                          {backlog.estimatedHours && (
-                            <span>Est: {backlog.estimatedHours}h</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // TODO: Navigate to backlog details or edit
+                                console.log('View backlog:', backlog.Id);
+                              }}
+                            >
+                              View Details
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -331,7 +358,6 @@ const ProjectDetails = () => {
         open={isAddBacklogOpen}
         onOpenChange={setIsAddBacklogOpen}
         projectId={projectId ? Number(projectId) : 0}
-        members={project?.members || []}
       />
     </>
   );

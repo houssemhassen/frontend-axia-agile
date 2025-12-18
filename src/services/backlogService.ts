@@ -1,21 +1,5 @@
-import { CreateBacklogData } from "@/types/backlogs";
+import { CreateBacklogData, Backlog } from "@/types/backlogs";
 import api from "./api";
-
-
-
-export interface Backlog {
-  id: number;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  projectId: number;
-  assignedTo?: string;
-  estimatedHours?: number;
-  tags?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 // Fetch all backlogs for a project
 export const fetchBacklogsByProject = async (projectId: number) => {
