@@ -4,7 +4,7 @@ import api from "./api";
 // Fetch all backlogs for a project
 export const fetchBacklogsByProject = async (projectId: number) => {
   try {
-    const response = await api.get(`/backlog/project/${projectId}`);
+    const response = await api.get(`/backlog/projet/${projectId}`);
     console.log('Backlogs response:', response.data);
     return response;
   } catch (error) {

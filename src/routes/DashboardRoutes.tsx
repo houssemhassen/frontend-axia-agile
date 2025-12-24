@@ -15,119 +15,122 @@ import ReleasePlanning from "@/pages/ReleasePlanning";
 import ValueMetrics from "@/pages/ValueMetrics";
 
 export const DashboardRoutes = [
-  <Route 
-    key="project-manager" 
-    path="project-manager" 
+  <Route
+    key="project-manager"
+    path="project-manager"
     element={
       <RoleRoute requiredRole="projectManager">
         <ProjectManagerDashboard />
       </RoleRoute>
     }
   />,
-  <Route 
-    key="superadmin" 
-    path="superadmin" 
+  <Route
+    key="superadmin"
+    path="superadmin"
     element={
       <RoleRoute requiredRole="superadmin">
         <SuperAdminDashboard />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="billingadmin" 
-    path="billing" 
+  <Route
+    key="billingadmin"
+    path="billing"
     element={
-        <BillingAdminDashboard />
-    } 
+      <BillingAdminDashboard />
+    }
   />,
-  <Route 
-    key="dashboard" 
-    path="dashboard" 
+  <Route
+    key="dashboard"
+    path="dashboard"
     element={
       <RoleRoute requiredRole="productOwner">
         <Dashboard />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="product-owner" 
-    path="product-owner" 
+  <Route
+    key="product-owner-dashboard"
+    path="product-owner-dashboard"
     element={
-      <RoleRoute requiredRole="productOwner">
-        <ProductOwnerDashboard />
-      </RoleRoute>
-    } 
+
+      <ProductOwnerDashboard />
+
+      /*       <RoleRoute requiredRole="productOwner">
+              <ProductOwnerDashboard />
+            </RoleRoute> */
+    }
   />,
-  <Route 
-    key="backlog" 
-    path="backlog" 
+  <Route
+    key="backlog"
+    path="backlog"
     element={
       <RoleRoute requiredRole="productOwner">
         <Backlog />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="release-planning" 
-    path="release-planning" 
+  <Route
+    key="release-planning"
+    path="release-planning"
     element={
       <RoleRoute requiredRole="productOwner">
         <ReleasePlanning />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="value-metrics" 
-    path="value-metrics" 
+  <Route
+    key="value-metrics"
+    path="value-metrics"
     element={
       <RoleRoute requiredRole="productOwner">
         <ValueMetrics />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="scrum-master" 
-    path="scrum-master" 
+  <Route
+    key="scrum-master"
+    path="scrum-master"
     element={
       <RoleRoute requiredRole="scrumMaster">
         <ScrumMasterDashboard />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="developer" 
-    path="developer" 
+  <Route
+    key="developer"
+    path="developer"
     element={
       <RoleRoute requiredRole="developer">
         <DeveloperDashboard />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="qa-tester" 
-    path="qa-tester" 
+  <Route
+    key="qa-tester"
+    path="qa-tester"
     element={
       <RoleRoute requiredRole="tester">
         <QATesterDashboard />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="settings" 
-    path="settings" 
+  <Route
+    key="settings"
+    path="settings"
     element={
       <RoleRoute requiredRole={["superadmin", "billingAdmin", "productOwner", "scrumMaster", "developer", "tester"]}>
         <Settings />
       </RoleRoute>
-    } 
+    }
   />,
-  <Route 
-    key="profile" 
-    path="profile" 
+  <Route
+    key="profile"
+    path="profile"
     element={
       <RoleRoute requiredRole={["superadmin", "billingAdmin", "productOwner", "scrumMaster", "developer", "tester"]}>
         <Profile />
       </RoleRoute>
-    } 
+    }
   />
 ];

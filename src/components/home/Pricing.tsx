@@ -6,7 +6,7 @@ const Pricing = () => {
   const plans = [
     {
       name: "Starter",
-      price: "$9",
+      price: "0 DT",
       period: "per user/month",
       description: "Perfect for small teams getting started with agile",
       features: [
@@ -20,7 +20,7 @@ const Pricing = () => {
     },
     {
       name: "Professional",
-      price: "$19",
+      price: "99 DT",
       period: "per user/month", 
       description: "Advanced features for growing agile teams",
       features: [
@@ -36,7 +36,7 @@ const Pricing = () => {
     },
     {
       name: "Enterprise",
-      price: "$39",
+      price: "399 DT",
       period: "per user/month",
       description: "Full-scale solution for large organizations",
       features: [

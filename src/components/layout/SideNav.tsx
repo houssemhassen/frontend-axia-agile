@@ -43,7 +43,7 @@ const SideNav = ({ role = "ProductOwner", onCollapsedChange }: SideNavProps) => 
     },
     {
       name: "Backlog",
-      path: "/backlog",
+      path: "/product-owner/backlog",
       icon: <ListTodo size={20} />,
       roles: ["productOwner"]
     },

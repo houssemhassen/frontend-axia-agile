@@ -2,12 +2,12 @@ import SidebarAdmin from "@/components/admin/sidebar";
 import RoleRoute from "@/components/auth/RoleRoute";
 import { UserRole } from "@/types/roles";
 
-type AdminLayoutProps = {
+type ProductOwnerLayoutProps = {
   children: React.ReactNode;
   roles: UserRole | UserRole[];
 };
 
-export default function AdminLayout({ children, roles }: AdminLayoutProps) {
+export default function ProductOwnerLayout({ children, roles }: ProductOwnerLayoutProps) {
   return (
     <RoleRoute requiredRole={roles}>
       <div className="flex min-h-screen">

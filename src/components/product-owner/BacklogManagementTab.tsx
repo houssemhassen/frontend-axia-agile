@@ -7,13 +7,14 @@ import BacklogHealthCards from './backlog/BacklogHealthCards';
 import UserStoryMap from "./UserStoryMap";
 import { Dialog } from "@/components/ui/dialog";
 import { AddBacklogDialog } from './backlog/AddBacklogDialog';
+import { AddUserStoryDialog } from './userStory/AddUserStoryDialog';
 
 const BacklogManagementTab = () => {
   const [activeView, setActiveView] = useState("list");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
+
   // Use our custom hook for backlog management
 
   // Define styling for priority badges
@@ -40,14 +41,8 @@ const BacklogManagementTab = () => {
 
   const handleEditItem = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-  
+
   };
-
-
-
-
-
-
 
   // Import the refactored dialog component dynamically to keep this file smaller
   const EditBacklogItemDialog = React.lazy(() => import('../backlog/EditBacklogItemDialog'));
@@ -61,28 +56,38 @@ const BacklogManagementTab = () => {
           Add Story
         </Button>
       </div>
-      
+
       <Tabs defaultValue="list" value={activeView} onValueChange={setActiveView}>
         <TabsList className="mb-4">
           <TabsTrigger value="list">List View</TabsTrigger>
           <TabsTrigger value="map">Story Map</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="list">
-      
+
         </TabsContent>
-        
+
         <TabsContent value="map">
           <UserStoryMap />
         </TabsContent>
       </Tabs>
-      
+
       <BacklogHealthCards />
 
       {/* Add Dialog */}
-   
+      <AddUserStoryDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        projectId={2}
+        backlogId={1}
+        onSuccess={() => {
+        //  fetchUserStories();
+        }}
+      />
+
+
       {/* Edit Dialog */}
-     
+
     </>
   );
 };

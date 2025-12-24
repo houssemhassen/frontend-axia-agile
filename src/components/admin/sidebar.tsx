@@ -44,6 +44,14 @@ const SidebarAdmin = ({ role = "productOwner", onCollapsedChange }: SideNavProps
       icon: <GitBranch size={20} />,
       roles: ["superadmin", "productOwner", "scrumMaster"]
     },
+        {
+      name: "Backlog",
+      path: "/product-owner/backlog",
+      icon: <GitBranch size={20} />,
+      roles: ["superadmin", "productOwner", "scrumMaster"]
+    },
+
+    
   ];
 
   useEffect(() => {

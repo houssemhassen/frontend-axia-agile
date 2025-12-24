@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import BacklogHeader from "@/components/backlog/BacklogHeader";
 import BacklogTable from "@/components/backlog/BacklogTable";
 import BacklogSummary from "@/components/backlog/BacklogSummary";
@@ -96,58 +95,52 @@ const Backlog = () => {
         <meta name="description" content="Product Backlog Management" />
       </Helmet>
 
-      <DashboardLayout 
-        role="productOwner"
-        pageTitle="Product Backlog"
-        pageDescription="Organize, prioritize and refine your product backlog"
-      >
-        <div className="space-y-6">
-          <BacklogHeader 
-            searchTerm={searchTerm}
-            setSearchTerm={handleSearchTermChange}
-            statusFilter={statusFilter}
-            setStatusFilter={handleStatusFilterChange}
-            priorityFilter={priorityFilter}
-            setPriorityFilter={handlePriorityFilterChange}
-            onAddItem={handleAddItem}
-            quickAddMode={quickAddMode}
-            setQuickAddMode={setQuickAddMode}
-            quickAddInput={quickAddInput}
-            setQuickAddInput={setQuickAddInput}
-            handleQuickAdd={handleQuickAdd}
-          />
+      <div className="space-y-6">
+        <BacklogHeader 
+          searchTerm={searchTerm}
+          setSearchTerm={handleSearchTermChange}
+          statusFilter={statusFilter}
+          setStatusFilter={handleStatusFilterChange}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={handlePriorityFilterChange}
+          onAddItem={handleAddItem}
+          quickAddMode={quickAddMode}
+          setQuickAddMode={setQuickAddMode}
+          quickAddInput={quickAddInput}
+          setQuickAddInput={setQuickAddInput}
+          handleQuickAdd={handleQuickAdd}
+        />
 
-          <BacklogTable 
-            filteredItems={backlogItems}
-            onDragEnd={updateItemsOrder}
-            onItemClick={handleItemClick}
-            totalItems={totalItems}
-          />
+        <BacklogTable 
+          filteredItems={backlogItems}
+          onDragEnd={updateItemsOrder}
+          onItemClick={handleItemClick}
+          totalItems={totalItems}
+        />
 
-          <BacklogSummary backlogItems={backlogItems} />
+        <BacklogSummary backlogItems={backlogItems} />
 
-          <AddBacklogItemDialog 
-            isOpen={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            newItemTitle={newItemTitle}
-            setNewItemTitle={setNewItemTitle}
-            newItemDescription={newItemDescription}
-            setNewItemDescription={setNewItemDescription}
-            newItemType={newItemType}
-            setNewItemType={setNewItemType}
-            newItemPriority={newItemPriority}
-            setNewItemPriority={setNewItemPriority}
-            onAddNewItem={handleAddNewItem}
-          />
-          
-          <EditBacklogItemDialog
-            isOpen={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            item={selectedItem}
-            onSave={handleUpdateItem}
-          />
-        </div>
-      </DashboardLayout>
+        <AddBacklogItemDialog 
+          isOpen={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          newItemTitle={newItemTitle}
+          setNewItemTitle={setNewItemTitle}
+          newItemDescription={newItemDescription}
+          setNewItemDescription={setNewItemDescription}
+          newItemType={newItemType}
+          setNewItemType={setNewItemType}
+          newItemPriority={newItemPriority}
+          setNewItemPriority={setNewItemPriority}
+          onAddNewItem={handleAddNewItem}
+        />
+        
+        <EditBacklogItemDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          item={selectedItem}
+          onSave={handleUpdateItem}
+        />
+      </div>
     </>
   );
 };

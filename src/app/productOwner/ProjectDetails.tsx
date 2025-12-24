@@ -311,8 +311,7 @@ const ProjectDetails = () => {
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // TODO: Navigate to backlog details or edit
-                                console.log('View backlog:', backlog.Id);
+                                navigate(`/projects/${projectId}/backlog/${backlog.Id}`);
                               }}
                             >
                               View Details

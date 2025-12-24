@@ -3,6 +3,7 @@ import Projects from "@/app/productOwner/Projects";
 import DashboardProductOwner from "@/app/productOwner/dashboard";
 import ProjectDetails from "@/app/productOwner/ProjectDetails";
 import Backlog from "@/app/productOwner/Backlog";
+import BacklogDetails from "@/app/productOwner/BacklogDetails";
 
 
 export const ProductOwnerRoutes = (
@@ -11,6 +12,6 @@ export const ProductOwnerRoutes = (
     <Route path="/product-owner/projects" element={<Projects />} />
     <Route path="/product-owner/projects/details/:projectId" element={<ProjectDetails />} />
     <Route path="/product-owner/backlog" element={<Backlog />} />
-
+<Route path="/projects/:projectId/backlog/:backlogId" element={<BacklogDetails />} />
   </>
 );
